@@ -1,0 +1,43 @@
+////           3913. Sort Vowels by Frequency            ////
+
+
+
+import java.util.*;
+
+class Solution {
+    public String sortVowels(String s) {
+        String vowelsStr = "aeiou";
+        int n = s.length();
+        int[] freq = new int[256];
+        int[] firstPos = new int[256];
+        Arrays.fill(firstPos, -1);
+        
+        List<Integer> vowelIndices = new ArrayList<>();
+        List<Character> vowelsFound = new ArrayList<>();
+        
+        for (int i = 0; i < n; i++) {
+            char ch = s.charAt(i);
+            if (vowelsStr.indexOf(ch) != -1) {
+                vowelIndices.add(i);
+                vowelsFound.add(ch);
+                freq[ch]++;
+                if (firstPos[ch] == -1) {
+                    firstPos[ch] = i;
+                }
+            }
+        }        Collections.sort(vowelsFound, (a, b) -> {
+            if (freq[a] != freq[b]) {
+                return freq[b] - freq[a]; 
+            }
+            return firstPos[a] - firstPos[b]; 
+        });
+        
+        
+        char[] result = s.toCharArray();
+        for (int i = 0; i < vowelIndices.size(); i++) {
+            result[vowelIndices.get(i)] = vowelsFound.get(i);
+        }
+        
+        return new String(result);
+    }
+}
