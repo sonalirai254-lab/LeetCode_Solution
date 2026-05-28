@@ -1,0 +1,77 @@
+////       3661. Maximum Walls Destroyed by Robots        ////
+
+
+
+
+import java.util.*;
+
+class Solution {
+    private Integer[][] dp;
+    private int[][] arr;   
+    private int[] walls;
+    private int n;
+
+    public int maxWalls(int[] robots, int[] distance, int[] walls) {
+        n = robots.length;
+        arr = new int[n][2];
+
+        for (int i = 0; i < n; i++) {
+            arr[i][0] = robots[i];
+            arr[i][1] = distance[i];
+        }
+
+        Arrays.sort(arr, Comparator.comparingInt(a -> a[0]));
+        Arrays.sort(walls);
+        this.walls = walls;
+
+        dp = new Integer[n][2];
+
+        return dfs(n - 1, 1);
+    }
+
+    private int dfs(int i, int nextDir) {
+        if (i < 0) return 0;
+
+        if (dp[i][nextDir] != null) return dp[i][nextDir];
+        int left = arr[i][0] - arr[i][1];
+        if (i > 0) {
+            left = Math.max(left, arr[i - 1][0] + 1);
+        }
+
+        int l1 = lowerBound(walls, left);
+        int r1 = lowerBound(walls, arr[i][0] + 1);
+        int destroyLeft = r1 - l1;
+
+        int ans = dfs(i - 1, 0) + destroyLeft;
+        int right = arr[i][0] + arr[i][1];
+        if (i + 1 < n) {
+            if (nextDir == 0) {
+                right = Math.min(right, arr[i + 1][0] - arr[i + 1][1] - 1);
+            } else {
+                
+                right = Math.min(right, arr[i + 1][0] - 1);
+            }
+        }
+
+        int l2 = lowerBound(walls, arr[i][0]);
+        int r2 = lowerBound(walls, right + 1);
+        int destroyRight = r2 - l2;
+
+        ans = Math.max(ans, dfs(i - 1, 1) + destroyRight);
+
+        return dp[i][nextDir] = ans;
+    }
+
+    private int lowerBound(int[] arr, int target) {
+        int low = 0, high = arr.length;
+        while (low < high) {
+            int mid = low + (high - low) / 2;
+            if (arr[mid] >= target) {
+                high = mid;
+            } else {
+                low = mid + 1;
+            }
+        }
+        return low;
+    }
+}
