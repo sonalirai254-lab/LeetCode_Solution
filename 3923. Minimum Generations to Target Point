@@ -1,0 +1,66 @@
+////                   3923. Minimum Generations to Target Point              ////
+
+
+
+import java.util.*;
+
+class Solution {
+    public int minGenerations(int[][] points, int[] target) {
+        Set<String> currentGen = new HashSet<>();
+        for (int[] p : points) {
+            if (isTarget(p, target)) return 0;
+            currentGen.add(serialize(p));
+        }
+
+        int generations = 0;
+        Set<String> allPoints = new HashSet<>(currentGen);
+
+        while (generations < 100) { 
+            generations++;
+            Set<String> nextGen = new HashSet<>();
+            List<int[]> pointList = new ArrayList<>();
+            for (String s : allPoints) {
+                pointList.add(deserialize(s));
+            }
+
+            boolean addedNew = false;
+            for (int i = 0; i < pointList.size(); i++) {
+                for (int j = i + 1; j < pointList.size(); j++) {
+                    int[] p1 = pointList.get(i);
+                    int[] p2 = pointList.get(j);
+                    int[] mid = {
+                        (p1[0] + p2[0]) / 2,
+                        (p1[1] + p2[1]) / 2,
+                        (p1[2] + p2[2]) / 2
+                    };
+                    
+                    if (isTarget(mid, target)) return generations;
+                    
+                    String sMid = serialize(mid);
+                    if (!allPoints.contains(sMid)) {
+                        nextGen.add(sMid);
+                        addedNew = true;
+                    }
+                }
+            }
+            
+            if (!addedNew) break;
+            allPoints.addAll(nextGen);
+        }
+
+        return -1;
+    }
+
+    private boolean isTarget(int[] p, int[] target) {
+        return p[0] == target[0] && p[1] == target[1] && p[2] == target[2];
+    }
+
+    private String serialize(int[] p) {
+        return p[0] + "," + p[1] + "," + p[2];
+    }
+
+    private int[] deserialize(String s) {
+        String[] parts = s.split(",");
+        return new int[]{Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt(parts[2])};
+    }
+}
