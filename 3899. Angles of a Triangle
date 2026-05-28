@@ -1,0 +1,34 @@
+////         3899. Angles of a Triangle          ////
+
+
+
+class Solution {
+    public double[] internalAngles(int[] sides) {
+        int a = sides[0];
+        int b = sides[1];
+        int c = sides[2];
+
+        
+        if (a + b <= c || a + c <= b || b + c <= a) {
+            return new double[0];
+        }
+
+        double angleA = getAngle(b, c, a);
+        double angleB = getAngle(a, c, b);
+        double angleC = getAngle(a, b, c);
+
+        double[] ans = {angleA, angleB, angleC};
+        java.util.Arrays.sort(ans);
+
+        return ans;
+    }
+
+    private double getAngle(int x, int y, int z) {
+        double cos = (1.0 * x * x + 1.0 * y * y - 1.0 * z * z) / (2.0 * x * y);
+
+      
+        cos = Math.max(-1.0, Math.min(1.0, cos));
+
+        return Math.toDegrees(Math.acos(cos));
+    }
+}
