@@ -1,0 +1,67 @@
+/////             3920. Maximize Fixed Points After Deletions              /////
+
+
+
+import java.util.*;
+
+class Solution {
+    public int maxFixedPoints(int[] nums) {
+        int n = nums.length;
+
+        ArrayList<Integer>[] bucket = new ArrayList[n];
+
+        for (int i = 0; i < n; i++) {
+            int v = nums[i];
+
+            if (v >= 0 && v <= i && v < n) {
+                if (bucket[v] == null) bucket[v] = new ArrayList<>();
+                bucket[v].add(i - v);
+            }
+        }
+
+        Fenwick bit = new Fenwick(n + 2);
+        int ans = 0;
+
+        for (int v = 0; v < n; v++) {
+            if (bucket[v] == null) continue;
+
+            ArrayList<int[]> updates = new ArrayList<>();
+
+            for (int d : bucket[v]) {
+                int dp = 1 + bit.query(d + 1);
+                updates.add(new int[]{d + 1, dp});
+                ans = Math.max(ans, dp);
+            }
+
+            for (int[] up : updates) {
+                bit.update(up[0], up[1]);
+            }
+        }
+
+        return ans;
+    }
+
+    class Fenwick {
+        int[] tree;
+
+        Fenwick(int n) {
+            tree = new int[n + 1];
+        }
+
+        void update(int i, int val) {
+            while (i < tree.length) {
+                tree[i] = Math.max(tree[i], val);
+                i += i & -i;
+            }
+        }
+
+        int query(int i) {
+            int res = 0;
+            while (i > 0) {
+                res = Math.max(res, tree[i]);
+                i -= i & -i;
+            }
+            return res;
+        }
+    }
+}
