@@ -1,0 +1,77 @@
+////           3897. Maximum Value of Concatenated Binary Segments           ////
+
+
+
+
+import java.util.*;
+
+class Solution {
+    static final long MOD = 1_000_000_007L;
+
+    public int maxValue(int[] nums1, int[] nums0) {
+        int n = nums1.length;
+
+        Integer[] order = new Integer[n];
+        for (int i = 0; i < n; i++) {
+            order[i] = i;
+        }
+
+        Arrays.sort(order, (i, j) -> compareSegments(nums1[i], nums0[i], nums1[j], nums0[j]));
+
+        long ans = 0;
+
+        for (int idx : order) {
+            int ones = nums1[idx];
+            int zeros = nums0[idx];
+
+            long segmentLen = (long) ones + zeros;
+            long segmentValue = ((modPow(2, ones) - 1 + MOD) % MOD) * modPow(2, zeros) % MOD;
+
+            ans = (ans * modPow(2, segmentLen)) % MOD;
+            ans = (ans + segmentValue) % MOD;
+        }
+
+        return (int) ans;
+    }
+    private int compareSegments(int a1, int a0, int b1, int b0) {
+        int[] bits1 = {1, 0, 1, 0};   
+        long[] len1 = {a1, a0, b1, b0};
+
+        int[] bits2 = {1, 0, 1, 0};   
+        long[] len2 = {b1, b0, a1, a0};
+
+        int i = 0, j = 0;
+
+        while (i < 4 && j < 4) {
+            while (i < 4 && len1[i] == 0) i++;
+            while (j < 4 && len2[j] == 0) j++;
+
+            if (i == 4 || j == 4) break;
+
+            if (bits1[i] != bits2[j]) {
+                return bits2[j] - bits1[i];
+            }
+
+            long take = Math.min(len1[i], len2[j]);
+            len1[i] -= take;
+            len2[j] -= take;
+        }
+
+        return 0;
+    }
+
+    private long modPow(long base, long exp) {
+        long result = 1;
+        base %= MOD;
+
+        while (exp > 0) {
+            if ((exp & 1) == 1) {
+                result = (result * base) % MOD;
+            }
+            base = (base * base) % MOD;
+            exp >>= 1;
+        }
+
+        return result;
+    }
+}
