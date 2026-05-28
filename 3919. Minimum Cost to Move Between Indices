@@ -1,0 +1,52 @@
+////       3919. Minimum Cost to Move Between Indices         ////
+
+
+
+class Solution {
+    public int[] minCost(int[] nums, int[][] queries) {
+        int n = nums.length;
+
+        int[] right = new int[n];
+        int[] left = new int[n];
+
+        for (int i = 0; i < n - 1; i++) {
+            int cost = nums[i + 1] - nums[i];
+
+            if (closest(nums, i) == i + 1) cost = 1;
+
+            right[i + 1] = right[i] + cost;
+        }
+
+        for (int i = n - 1; i > 0; i--) {
+            int cost = nums[i] - nums[i - 1];
+
+            if (closest(nums, i) == i - 1) cost = 1;
+
+            left[i - 1] = left[i] + cost;
+        }
+
+        int[] ans = new int[queries.length];
+
+        for (int i = 0; i < queries.length; i++) {
+            int l = queries[i][0];
+            int r = queries[i][1];
+
+            if (l < r) ans[i] = right[r] - right[l];
+            else ans[i] = left[r] - left[l];
+        }
+
+        return ans;
+    }
+
+    private int closest(int[] nums, int i) {
+        int n = nums.length;
+
+        if (i == 0) return 1;
+        if (i == n - 1) return n - 2;
+
+        int left = nums[i] - nums[i - 1];
+        int right = nums[i + 1] - nums[i];
+
+        return left <= right ? i - 1 : i + 1;
+    }
+}
