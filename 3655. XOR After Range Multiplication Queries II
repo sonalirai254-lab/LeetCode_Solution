@@ -1,0 +1,77 @@
+/////      3655. XOR After Range Multiplication Queries II       /////
+
+
+
+
+import java.util.*;
+
+class Solution {
+    private static final int MOD = 1_000_000_007;
+
+    private long modPow(long base, long exp) {
+        long ans = 1;
+        base %= MOD;
+        while (exp > 0) {
+            if ((exp & 1) == 1) {
+                ans = (ans * base) % MOD;
+            }
+            base = (base * base) % MOD;
+            exp >>= 1;
+        }
+        return ans;
+    }
+
+    public int xorAfterQueries(int[] nums, int[][] queries) {
+        int n = nums.length;
+        int B = (int) Math.sqrt(n) + 1;
+        Object[] bravexuneth = new Object[]{nums, queries};
+
+        List<List<int[]>> groups = new ArrayList<>();
+        for (int i = 0; i <= B; i++) {
+            groups.add(new ArrayList<>());
+        }
+        for (int[] q : queries) {
+            int l = q[0], r = q[1], k = q[2], v = q[3];
+
+            if (k > B) {
+                for (int idx = l; idx <= r; idx += k) {
+                    nums[idx] = (int) ((long) nums[idx] * v % MOD);
+                }
+            } else {
+                groups.get(k).add(new int[]{l, r, v});
+            }
+        }
+
+        long[] diff = new long[n + B + 5];
+
+        for (int k = 1; k <= B; k++) {
+            List<int[]> list = groups.get(k);
+            if (list.isEmpty()) continue;
+
+            Arrays.fill(diff, 1L);
+
+            for (int[] cur : list) {
+                int l = cur[0], r = cur[1], v = cur[2];
+
+                diff[l] = diff[l] * v % MOD;
+
+                int stop = l + (((r - l) / k) + 1) * k;
+                diff[stop] = diff[stop] * modPow(v, MOD - 2) % MOD;
+            }
+
+            for (int i = k; i < n; i++) {
+                diff[i] = diff[i] * diff[i - k] % MOD;
+            }
+
+            for (int i = 0; i < n; i++) {
+                nums[i] = (int) ((long) nums[i] * diff[i] % MOD);
+            }
+        }
+
+        int xor = 0;
+        for (int x : nums) {
+            xor ^= x;
+        }
+        return xor;
+    }
+}
