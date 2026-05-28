@@ -1,0 +1,212 @@
+////           3901. Good Subsequence Queries         ////
+
+
+
+import java.util.*;
+
+class Solution {
+    private int n;
+    private int p;
+    private int[] nums;
+
+    private int activeCount; 
+    private int xorAllIndices;
+
+    private int[] spf; 
+    private Map<Integer, int[]> factorCache = new HashMap<>();
+
+    
+    private Map<Integer, Integer> primeCount = new HashMap<>();
+
+   
+    private Map<Integer, Integer> primeXor = new HashMap<>();
+
+   
+    private int[] hist;
+
+   
+    private int[] blockCount;
+    private int zeroBlockCount;
+
+    public int countGoodSubseq(int[] nums, int p, int[][] queries) {
+        this.n = nums.length;
+        this.p = p;
+        this.nums = nums.clone();
+
+        hist = new int[n + 1];
+        blockCount = new int[n];
+        zeroBlockCount = n;
+
+        xorAllIndices = 0;
+        for (int i = 0; i < n; i++) {
+            xorAllIndices ^= i;
+        }
+
+        int maxNorm = 1;
+
+        for (int x : nums) {
+            if (x % p == 0) {
+                maxNorm = Math.max(maxNorm, x / p);
+            }
+        }
+
+        for (int[] q : queries) {
+            int val = q[1];
+            if (val % p == 0) {
+                maxNorm = Math.max(maxNorm, val / p);
+            }
+        }
+
+        buildSPF(maxNorm);
+
+        
+        activeCount = 0;
+        for (int i = 0; i < n; i++) {
+            if (this.nums[i] % p == 0) {
+                activeCount++;
+                int norm = this.nums[i] / p;
+                for (int prime : getUniquePrimeFactors(norm)) {
+                    updatePrime(prime, i, +1);
+                }
+            }
+        }
+
+        int ans = 0;
+
+        for (int[] q : queries) {
+            int idx = q[0];
+            int newVal = q[1];
+            int oldVal = this.nums[idx];
+
+            
+            if (oldVal % p == 0) {
+                activeCount--;
+                int norm = oldVal / p;
+                for (int prime : getUniquePrimeFactors(norm)) {
+                    updatePrime(prime, idx, -1);
+                }
+            }
+
+            
+            this.nums[idx] = newVal;
+
+        
+            if (newVal % p == 0) {
+                activeCount++;
+                int norm = newVal / p;
+                for (int prime : getUniquePrimeFactors(norm)) {
+                    updatePrime(prime, idx, +1);
+                }
+            }
+
+            if (existsGoodSubsequence()) {
+                ans++;
+            }
+        }
+
+        return ans;
+    }
+
+    private boolean existsGoodSubsequence() {
+        if (activeCount == 0) {
+            return false;
+        }
+        if (hist[activeCount] > 0) {
+            return false;
+        }
+        if (activeCount < n) {
+            return true;
+        }
+        return zeroBlockCount > 0;
+    }
+
+    private void updatePrime(int prime, int idx, int delta) {
+        int oldCount = primeCount.getOrDefault(prime, 0);
+        int oldXor = primeXor.getOrDefault(prime, 0);
+        if (oldCount == n - 1) {
+            int missingIndex = xorAllIndices ^ oldXor;
+            removeBlock(missingIndex);
+        }
+
+        if (oldCount > 0) {
+            hist[oldCount]--;
+        }
+
+        int newCount = oldCount + delta;
+        int newXor = oldXor ^ idx;
+
+        if (newCount == 0) {
+            primeCount.remove(prime);
+            primeXor.remove(prime);
+        } else {
+            primeCount.put(prime, newCount);
+            primeXor.put(prime, newXor);
+            hist[newCount]++;
+        }
+        if (newCount == n - 1) {
+            int missingIndex = xorAllIndices ^ newXor;
+            addBlock(missingIndex);
+        }
+    }
+
+    private void addBlock(int idx) {
+        if (blockCount[idx] == 0) {
+            zeroBlockCount--;
+        }
+        blockCount[idx]++;
+    }
+
+    private void removeBlock(int idx) {
+        blockCount[idx]--;
+        if (blockCount[idx] == 0) {
+            zeroBlockCount++;
+        }
+    }
+
+    private int[] getUniquePrimeFactors(int x) {
+        if (x <= 1) {
+            return new int[0];
+        }
+
+        int[] cached = factorCache.get(x);
+        if (cached != null) {
+            return cached;
+        }
+
+        int original = x;
+        ArrayList<Integer> list = new ArrayList<>();
+
+        while (x > 1) {
+            int prime = spf[x];
+            list.add(prime);
+            while (x % prime == 0) {
+                x /= prime;
+            }
+        }
+
+        int[] res = new int[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            res[i] = list.get(i);
+        }
+
+        factorCache.put(original, res);
+        return res;
+    }
+
+    private void buildSPF(int limit) {
+        spf = new int[Math.max(2, limit + 1)];
+        for (int i = 0; i < spf.length; i++) {
+            spf[i] = i;
+        }
+
+        for (int i = 2; i * i <= limit; i++) {
+            if (spf[i] == i) {
+                for (int j = i * i; j <= limit; j += i) {
+                    if (spf[j] == j) {
+                        spf[j] = i;
+                    }
+                }
+            }
+        }
+    }
+}
