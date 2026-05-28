@@ -1,0 +1,50 @@
+////          2069. Walking Robot Simulation II          ////
+
+
+
+
+class Robot {
+
+    int width, height;
+    int x = 0, y = 0;
+    int dir = 0; 
+
+    int[][] d = {{1,0},{0,1},{-1,0},{0,-1}};
+    String[] dirName = {"East","North","West","South"};
+
+    int cycle;
+
+    public Robot(int width, int height) {
+        this.width = width;
+        this.height = height;
+        this.cycle = 2 * (width + height - 2);
+    }
+
+    public void step(int num) {
+        if (cycle == 0) return;
+
+        num %= cycle;  
+        if (num == 0) num = cycle;
+
+        while (num > 0) {
+            int nx = x + d[dir][0];
+            int ny = y + d[dir][1];
+
+            if (nx < 0 || nx >= width || ny < 0 || ny >= height) {
+                dir = (dir + 1) % 4;
+            } else {
+                x = nx;
+                y = ny;
+                num--;
+            }
+        }
+    }
+
+    public int[] getPos() {
+        return new int[]{x, y};
+    }
+
+    public String getDir() {
+        return dirName[dir];
+    }
+}
