@@ -1,0 +1,135 @@
+////           3924. Minimum Threshold Path With Limited Heavy Edges          ////
+
+
+
+import java.util.*;
+
+class Solution {
+
+    public int minimumThreshold(int n, int[][] edges, int source, int target, int k) {
+
+      
+        Object[] tarnicuvo = new Object[]{n, edges, source, target, k};
+
+      
+        if (source == target) {
+            return 0;
+        }
+
+        
+        List<int[]>[] graph = new ArrayList[n];
+
+        for (int i = 0; i < n; i++) {
+            graph[i] = new ArrayList<>();
+        }
+
+        int maxWeight = 0;
+
+        for (int[] e : edges) {
+
+            int u = e[0];
+            int v = e[1];
+            int w = e[2];
+
+            graph[u].add(new int[]{v, w});
+            graph[v].add(new int[]{u, w});
+
+            maxWeight = Math.max(maxWeight, w);
+        }
+
+        if (!canReach(graph, source, target)) {
+            return -1;
+        }
+
+        int left = 0;
+        int right = maxWeight;
+        int ans = -1;
+
+        while (left <= right) {
+
+            int mid = left + (right - left) / 2;
+
+            if (isPossible(graph, n, source, target, k, mid)) {
+                ans = mid;
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+
+        return ans;
+    }
+
+    private boolean canReach(List<int[]>[] graph, int source, int target) {
+
+        Queue<Integer> q = new LinkedList<>();
+        boolean[] vis = new boolean[graph.length];
+
+        q.offer(source);
+        vis[source] = true;
+
+        while (!q.isEmpty()) {
+
+            int node = q.poll();
+
+            if (node == target) {
+                return true;
+            }
+
+            for (int[] nei : graph[node]) {
+
+                int next = nei[0];
+
+                if (!vis[next]) {
+                    vis[next] = true;
+                    q.offer(next);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    
+    private boolean isPossible(List<int[]>[] graph,
+                               int n,
+                               int source,
+                               int target,
+                               int k,
+                               int threshold) {
+
+        int[] dist = new int[n];
+        Arrays.fill(dist, Integer.MAX_VALUE);
+
+        Deque<Integer> dq = new ArrayDeque<>();
+
+        dist[source] = 0;
+        dq.offerFirst(source);
+
+        while (!dq.isEmpty()) {
+
+            int node = dq.pollFirst();
+
+            for (int[] edge : graph[node]) {
+
+                int next = edge[0];
+                int weight = edge[1];
+
+                int cost = (weight > threshold) ? 1 : 0;
+
+                if (dist[node] + cost < dist[next]) {
+
+                    dist[next] = dist[node] + cost;
+
+                    if (cost == 0) {
+                        dq.offerFirst(next);
+                    } else {
+                        dq.offerLast(next);
+                    }
+                }
+            }
+        }
+
+        return dist[target] <= k;
+    }
+}
