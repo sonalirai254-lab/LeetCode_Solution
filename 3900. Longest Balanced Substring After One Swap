@@ -1,0 +1,70 @@
+////          3900. Longest Balanced Substring After One Swap          ////
+
+
+
+
+class Solution {
+    public int longestBalanced(String s) {
+        int n = s.length();
+
+        int totalOnes = 0;
+        for (int i = 0; i < n; i++) {
+            if (s.charAt(i) == '1') totalOnes++;
+        }
+        int totalZeros = n - totalOnes;
+
+        int ans = 0;
+
+      
+        ans = Math.max(ans, longestWithDiffLimit(s, 0, n));
+
+        
+        ans = Math.max(ans, longestWithDiffLimit(s, 2, 2 * totalZeros));
+
+       
+        ans = Math.max(ans, longestWithDiffLimit(s, -2, 2 * totalOnes));
+
+        return ans;
+    }
+
+    private int longestWithDiffLimit(String s, int targetDiff, int maxLen) {
+        int n = s.length();
+        if (maxLen <= 0) return 0;
+
+        int size = 2 * n + 5;
+        int offset = n + 2;
+
+        @SuppressWarnings("unchecked")
+        java.util.ArrayDeque<Integer>[] pos = new java.util.ArrayDeque[size];
+        for (int i = 0; i < size; i++) {
+            pos[i] = new java.util.ArrayDeque<>();
+        }
+
+        int pref = 0;
+        int ans = 0;
+
+        
+        pos[offset].addLast(0);
+
+        for (int i = 1; i <= n; i++) {
+            char ch = s.charAt(i - 1);
+            pref += (ch == '1') ? 1 : -1;
+
+            int need = pref - targetDiff + offset;
+
+            if (need >= 0 && need < size) {
+                while (!pos[need].isEmpty() && pos[need].peekFirst() < i - maxLen) {
+                    pos[need].pollFirst();
+                }
+
+                if (!pos[need].isEmpty()) {
+                    ans = Math.max(ans, i - pos[need].peekFirst());
+                }
+            }
+
+            pos[pref + offset].addLast(i);
+        }
+
+        return ans;
+    }
+}
