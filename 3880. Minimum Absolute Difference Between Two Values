@@ -1,0 +1,25 @@
+////          3880. Minimum Absolute Difference Between Two Values           ////
+
+
+
+class Solution {
+    public int minAbsoluteDifference(int[] nums) {
+        int minDiff = Integer.MAX_VALUE;
+        int lastOneIndex = -1;
+
+        for (int i = 0; i < nums.length; i++) {
+            if (nums[i] == 1) {
+                lastOneIndex = i;
+            } 
+            else if (nums[i] == 2 && lastOneIndex != -1) {
+                minDiff = Math.min(minDiff, Math.abs(i - lastOneIndex));
+            }
+        }
+
+        if (minDiff == Integer.MAX_VALUE) {
+            return -1;
+        }
+
+        return minDiff;
+    }
+}
