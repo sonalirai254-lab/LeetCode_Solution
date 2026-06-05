@@ -1,0 +1,98 @@
+////        3753. Total Waviness of Numbers in Range II          ////
+
+
+
+class Solution {
+
+    static class Pair {
+        long count;
+        long waviness;
+
+        Pair(long c, long w) {
+            count = c;
+            waviness = w;
+        }
+    }
+
+    private char[] digits;
+    private Pair[][][][] memo;
+
+    public long totalWaviness(long num1, long num2) {
+        return solve(num2) - solve(num1 - 1);
+    }
+
+    private long solve(long x) {
+        if (x < 0) return 0;
+
+        digits = String.valueOf(x).toCharArray();
+
+        int n = digits.length;
+                memo = new Pair[n][11][11][2];
+
+        return dfs(0, -1, -1, false, true).waviness;
+    }
+
+    private Pair dfs(int pos, int prev1, int prev2,
+                     boolean started, boolean tight) {
+
+        if (pos == digits.length) {
+            return new Pair(1, 0);
+        }
+
+        int s = started ? 1 : 0;
+
+        if (!tight && memo[pos][prev1 + 1][prev2 + 1][s] != null) {
+            return memo[pos][prev1 + 1][prev2 + 1][s];
+        }
+
+        int limit = tight ? digits[pos] - '0' : 9;
+
+        long totalCount = 0;
+        long totalWavy = 0;
+
+        for (int d = 0; d <= limit; d++) {
+
+            boolean nextTight = tight && (d == limit);
+            if (!started && d == 0) {
+
+                Pair child = dfs(pos + 1, -1, -1,
+                                 false, nextTight);
+
+                totalCount += child.count;
+                totalWavy += child.waviness;
+
+            } else {
+
+                int add = 0;
+                if (prev2 != -1) {
+
+                    boolean peak =
+                            (prev1 > prev2 && prev1 > d);
+
+                    boolean valley =
+                            (prev1 < prev2 && prev1 < d);
+
+                    if (peak || valley) {
+                        add = 1;
+                    }
+                }
+
+                Pair child = dfs(pos + 1, d, prev1,
+                                 true, nextTight);
+
+                totalCount += child.count;
+
+                totalWavy += child.waviness
+                        + (long) add * child.count;
+            }
+        }
+
+        Pair ans = new Pair(totalCount, totalWavy);
+
+        if (!tight) {
+            memo[pos][prev1 + 1][prev2 + 1][s] = ans;
+        }
+
+        return ans;
+    }
+}
