@@ -1,0 +1,52 @@
+/////            3286. Find a Safe Walk Through a Grid            ///////
+
+
+
+
+import java.util.*;
+
+class Solution {
+    public boolean findSafeWalk(List<List<Integer>> grid, int health) {
+        int m = grid.size();
+        int n = grid.get(0).size();
+
+        int[][] dist = new int[m][n];
+        for (int[] row : dist) Arrays.fill(row, Integer.MAX_VALUE);
+
+        PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[2] - b[2]);
+
+        int startCost = grid.get(0).get(0);
+        dist[0][0] = startCost;
+        pq.offer(new int[]{0, 0, startCost});
+
+        int[] dx = {1, -1, 0, 0};
+        int[] dy = {0, 0, 1, -1};
+
+        while (!pq.isEmpty()) {
+            int[] cur = pq.poll();
+            int x = cur[0], y = cur[1], cost = cur[2];
+
+            if (cost != dist[x][y]) continue;
+
+            if (x == m - 1 && y == n - 1) {
+                return cost < health;
+            }
+
+            for (int k = 0; k < 4; k++) {
+                int nx = x + dx[k];
+                int ny = y + dy[k];
+
+                if (nx >= 0 && ny >= 0 && nx < m && ny < n) {
+                    int newCost = cost + grid.get(nx).get(ny);
+
+                    if (newCost < dist[nx][ny] && newCost < health) {
+                        dist[nx][ny] = newCost;
+                        pq.offer(new int[]{nx, ny, newCost});
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+}
