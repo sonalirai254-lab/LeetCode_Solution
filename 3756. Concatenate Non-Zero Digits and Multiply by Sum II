@@ -1,0 +1,70 @@
+///////            3756. Concatenate Non-Zero Digits and Multiply by Sum II              ////////
+
+
+
+
+class Solution {
+    static final long MOD = 1000000007L;
+
+    public int[] sumAndMultiply(String s, int[][] queries) {
+        int n = s.length();
+
+        long[] pow10 = new long[n + 1];
+        long[] invPow10 = new long[n + 1];
+        long[] prefVal = new long[n + 1];
+        long[] prefSum = new long[n + 1];
+        int[] prefCnt = new int[n + 1];
+
+        pow10[0] = 1;
+        for (int i = 1; i <= n; i++) {
+            pow10[i] = (pow10[i - 1] * 10) % MOD;
+        }
+
+        long inv10 = modPow(10, MOD - 2);
+        invPow10[0] = 1;
+        for (int i = 1; i <= n; i++) {
+            invPow10[i] = (invPow10[i - 1] * inv10) % MOD;
+        }
+
+        for (int i = 0; i < n; i++) {
+            int d = s.charAt(i) - '0';
+
+            prefCnt[i + 1] = prefCnt[i] + (d != 0 ? 1 : 0);
+            prefSum[i + 1] = prefSum[i] + d;
+
+            prefVal[i + 1] = prefVal[i];
+            if (d != 0) {
+                prefVal[i + 1] = (prefVal[i + 1] + d * invPow10[prefCnt[i + 1]]) % MOD;
+            }
+        }
+
+        int[] ans = new int[queries.length];
+
+        for (int i = 0; i < queries.length; i++) {
+            int l = queries[i][0];
+            int r = queries[i][1];
+
+            long sum = prefSum[r + 1] - prefSum[l];
+
+            long part = (prefVal[r + 1] - prefVal[l] + MOD) % MOD;
+            long x = (part * pow10[prefCnt[r + 1]]) % MOD;
+
+            ans[i] = (int) ((x * (sum % MOD)) % MOD);
+        }
+
+        return ans;
+    }
+
+    private long modPow(long a, long b) {
+        long res = 1;
+        while (b > 0) {
+            if ((b & 1) == 1) {
+                res = (res * a) % MOD;
+            }
+            a = (a * a) % MOD;
+            b >>= 1;
+        }
+        return res;
+    }
+}
+ 
