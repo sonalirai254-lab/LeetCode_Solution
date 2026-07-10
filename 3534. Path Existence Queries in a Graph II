@@ -1,0 +1,109 @@
+///////           3534. Path Existence Queries in a Graph II             ////////
+
+
+
+import java.util.*;
+
+class Solution {
+    public int[] pathExistenceQueries(int n, int[] nums, int maxDiff, int[][] queries) {
+        Integer[] order = new Integer[n];
+
+        for (int i = 0; i < n; i++) {
+            order[i] = i;
+        }
+
+        Arrays.sort(order, (a, b) -> Integer.compare(nums[a], nums[b]));
+
+        int[] sorted = new int[n];
+        int[] position = new int[n];
+
+        for (int i = 0; i < n; i++) {
+            sorted[i] = nums[order[i]];
+            position[order[i]] = i;
+        }
+
+        int[] component = new int[n];
+
+        for (int i = 1; i < n; i++) {
+            component[i] = component[i - 1];
+
+            if (sorted[i] - sorted[i - 1] > maxDiff) {
+                component[i]++;
+            }
+        }
+
+        int[] farthest = new int[n];
+        int right = 0;
+
+        for (int left = 0; left < n; left++) {
+            if (right < left) {
+                right = left;
+            }
+
+            while (right + 1 < n &&
+                   sorted[right + 1] - sorted[left] <= maxDiff) {
+                right++;
+            }
+
+            farthest[left] = right;
+        }
+
+        int log = 1;
+
+        while ((1L << log) <= n) {
+            log++;
+        }
+
+        int[][] jump = new int[log][n];
+
+        for (int i = 0; i < n; i++) {
+            jump[0][i] = farthest[i];
+        }
+
+        for (int level = 1; level < log; level++) {
+            for (int i = 0; i < n; i++) {
+                jump[level][i] = jump[level - 1][jump[level - 1][i]];
+            }
+        }
+
+        int[] answer = new int[queries.length];
+
+        for (int q = 0; q < queries.length; q++) {
+            int u = queries[q][0];
+            int v = queries[q][1];
+
+            if (u == v) {
+                answer[q] = 0;
+                continue;
+            }
+
+            int left = position[u];
+            int target = position[v];
+
+            if (left > target) {
+                int temp = left;
+                left = target;
+                target = temp;
+            }
+
+            if (component[left] != component[target]) {
+                answer[q] = -1;
+                continue;
+            }
+
+            int current = left;
+            int distance = 0;
+
+            for (int level = log - 1; level >= 0; level--) {
+                if (jump[level][current] < target) {
+                    current = jump[level][current];
+                    distance += 1 << level;
+                }
+            }
+
+            answer[q] = distance + 1;
+        }
+
+        return answer;
+    }
+}
