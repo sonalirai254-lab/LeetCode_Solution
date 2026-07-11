@@ -1,0 +1,69 @@
+///////              2685. Count the Number of Complete Components               ///////
+
+
+
+
+
+import java.util.*;
+
+class Solution {
+    public int countCompleteComponents(int n, int[][] edges) {
+        List<List<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < n; i++) adj.add(new ArrayList<>());
+        
+        for (int[] e : edges) {
+            adj.get(e[0]).add(e[1]);
+            adj.get(e[1]).add(e[0]);
+        }
+        
+        boolean[] visited = new boolean[n];
+        int result = 0;
+        
+        for (int i = 0; i < n; i++) {
+            if (!visited[i]) {
+                List<Integer> comp = new ArrayList<>();
+                Queue<Integer> q = new LinkedList<>();
+                q.add(i);
+                visited[i] = true;
+                
+                while (!q.isEmpty()) {
+                    int u = q.poll();
+                    comp.add(u);
+                    for (int v : adj.get(u)) {
+                        if (!visited[v]) {
+                            visited[v] = true;
+                            q.add(v);
+                        }
+                    }
+                }
+                int vertices = comp.size();
+                int edgeCount = 0;
+                for (int u : comp) {
+                    edgeCount += adj.get(u).size();
+                }
+                edgeCount /= 2; 
+                
+                if (edgeCount == vertices * (vertices - 1) / 2) {
+                    result++;
+                }
+            }
+        }
+        
+        return result;
+    }
+
+   
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        int m = sc.nextInt(); 
+        int[][] edges = new int[m][2];
+        for (int i = 0; i < m; i++) {
+            edges[i][0] = sc.nextInt();
+            edges[i][1] = sc.nextInt();
+        }
+        Solution sol = new Solution();
+        System.out.println(sol.countCompleteComponents(n, edges));
+        sc.close();
+    }
+}
