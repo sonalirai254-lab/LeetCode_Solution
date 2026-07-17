@@ -1,0 +1,70 @@
+//////////                   3312. Sorted GCD Pair Queries                  ////////////
+
+
+
+
+
+import java.util.*;
+
+class Solution {
+    public int[] gcdValues(int[] nums, long[] queries) {
+        int maxValue = 0;
+
+        for (int num : nums) {
+            maxValue = Math.max(maxValue, num);
+        }
+
+        long[] frequency = new long[maxValue + 1];
+
+        for (int num : nums) {
+            frequency[num]++;
+        }
+
+        long[] gcdCount = new long[maxValue + 1];
+
+        for (int gcd = maxValue; gcd >= 1; gcd--) {
+            long divisibleCount = 0;
+
+            for (int multiple = gcd; multiple <= maxValue; multiple += gcd) {
+                divisibleCount += frequency[multiple];
+            }
+
+            gcdCount[gcd] = divisibleCount * (divisibleCount - 1) / 2;
+
+            for (int multiple = gcd * 2;
+                 multiple <= maxValue;
+                 multiple += gcd) {
+                gcdCount[gcd] -= gcdCount[multiple];
+            }
+        }
+
+        long[] prefix = new long[maxValue + 1];
+
+        for (int gcd = 1; gcd <= maxValue; gcd++) {
+            prefix[gcd] = prefix[gcd - 1] + gcdCount[gcd];
+        }
+
+        int[] answer = new int[queries.length];
+
+        for (int i = 0; i < queries.length; i++) {
+            long query = queries[i];
+
+            int left = 1;
+            int right = maxValue;
+
+            while (left < right) {
+                int mid = left + (right - left) / 2;
+
+                if (prefix[mid] > query) {
+                    right = mid;
+                } else {
+                    left = mid + 1;
+                }
+            }
+
+            answer[i] = left;
+        }
+
+        return answer;
+    }
+}
