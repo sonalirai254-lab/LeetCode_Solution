@@ -1,0 +1,49 @@
+//////////                3499. Maximize Active Section with Trade I               ///////////
+
+
+
+
+class Solution {
+    public int maxActiveSectionsAfterTrade(String s) {
+        int active = 0;
+
+        for (char ch : s.toCharArray()) {
+            if (ch == '1') active++;
+        }
+
+        String t = "1" + s + "1";
+        int maxGain = 0;
+        int i = 0;
+
+        while (i < t.length()) {
+            if (t.charAt(i) == '0') {
+                int leftZeros = 0;
+
+                while (i < t.length() && t.charAt(i) == '0') {
+                    leftZeros++;
+                    i++;
+                }
+
+                while (i < t.length() && t.charAt(i) == '1') {
+                    i++;
+                }
+
+                int rightZeros = 0;
+                int j = i;
+
+                while (j < t.length() && t.charAt(j) == '0') {
+                    rightZeros++;
+                    j++;
+                }
+
+                if (rightZeros > 0) {
+                    maxGain = Math.max(maxGain, leftZeros + rightZeros);
+                }
+            } else {
+                i++;
+            }
+        }
+
+        return active + maxGain;
+    }
+}
