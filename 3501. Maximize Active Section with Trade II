@@ -1,0 +1,174 @@
+///////////                   3501. Maximize Active Section with Trade II                         /////////////
+
+
+
+
+
+import java.util.*;
+
+class Solution {
+    public List<Integer> maxActiveSectionsAfterTrade(
+            String s, int[][] queries) {
+
+        int n = s.length();
+        int totalOnes = 0;
+
+        List<Integer> start = new ArrayList<>();
+        List<Integer> end = new ArrayList<>();
+
+        for (int i = 0; i < n; ) {
+            if (s.charAt(i) == '1') {
+                totalOnes++;
+                i++;
+            } else {
+                int l = i;
+                while (i < n && s.charAt(i) == '0') i++;
+                start.add(l);
+                end.add(i - 1);
+            }
+        }
+
+        List<Integer> answer = new ArrayList<>();
+        int m = start.size();
+
+        if (m < 2) {
+            for (int[] query : queries) {
+                answer.add(totalOnes);
+            }
+            return answer;
+        }
+
+        int[] values = new int[m - 1];
+
+        for (int i = 0; i + 1 < m; i++) {
+            int firstLength = end.get(i) - start.get(i) + 1;
+            int secondLength = end.get(i + 1) - start.get(i + 1) + 1;
+            values[i] = firstLength + secondLength;
+        }
+
+        SegmentTree tree = new SegmentTree(values);
+
+        for (int[] query : queries) {
+            int l = query[0];
+            int r = query[1];
+
+            int first = firstEndAtLeast(end, l);
+            int last = lastStartAtMost(start, r);
+            int gain = 0;
+
+            if (first < last && first < m && last >= 0) {
+                gain = clippedGain(first, l, r, start, end);
+
+                if (first != last - 1) {
+                    gain = Math.max(
+                        gain,
+                        clippedGain(last - 1, l, r, start, end)
+                    );
+                }
+
+                if (first + 1 <= last - 2) {
+                    gain = Math.max(
+                        gain,
+                        tree.query(first + 1, last - 2)
+                    );
+                }
+            }
+
+            answer.add(totalOnes + gain);
+        }
+
+        return answer;
+    }
+
+    private int clippedGain(
+            int i, int l, int r,
+            List<Integer> start,
+            List<Integer> end) {
+
+        int leftZeros =
+            end.get(i) - Math.max(start.get(i), l) + 1;
+
+        int rightZeros =
+            Math.min(end.get(i + 1), r) - start.get(i + 1) + 1;
+
+        return leftZeros + rightZeros;
+    }
+
+    private int firstEndAtLeast(List<Integer> end, int value) {
+        int low = 0;
+        int high = end.size();
+
+        while (low < high) {
+            int mid = (low + high) >>> 1;
+
+            if (end.get(mid) >= value) {
+                high = mid;
+            } else {
+                low = mid + 1;
+            }
+        }
+
+        return low;
+    }
+
+    private int lastStartAtMost(List<Integer> start, int value) {
+        int low = 0;
+        int high = start.size();
+
+        while (low < high) {
+            int mid = (low + high) >>> 1;
+
+            if (start.get(mid) <= value) {
+                low = mid + 1;
+            } else {
+                high = mid;
+            }
+        }
+
+        return low - 1;
+    }
+
+    static class SegmentTree {
+        int size;
+        int[] tree;
+
+        SegmentTree(int[] arr) {
+            size = 1;
+            while (size < arr.length) size <<= 1;
+
+            tree = new int[size * 2];
+
+            for (int i = 0; i < arr.length; i++) {
+                tree[size + i] = arr[i];
+            }
+
+            for (int i = size - 1; i >= 1; i--) {
+                tree[i] = Math.max(
+                    tree[i * 2],
+                    tree[i * 2 + 1]
+                );
+            }
+        }
+
+        int query(int left, int right) {
+            int result = 0;
+            left += size;
+            right += size;
+
+            while (left <= right) {
+                if ((left & 1) == 1) {
+                    result = Math.max(result, tree[left++]);
+                }
+
+                if ((right & 1) == 0) {
+                    result = Math.max(result, tree[right--]);
+                }
+
+                left >>= 1;
+                right >>= 1;
+            }
+
+            return result;
+        }
+    }
+}
