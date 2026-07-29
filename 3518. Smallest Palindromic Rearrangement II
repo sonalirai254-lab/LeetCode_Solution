@@ -1,0 +1,170 @@
+////////////                     3518. Smallest Palindromic Rearrangement II                      ///////////////
+
+
+
+
+
+
+class Solution {
+    private double[] logFact;
+
+    public String smallestPalindrome(String s, int k) {
+        int n = s.length();
+        int[] count = new int[26];
+
+        for (char ch : s.toCharArray()) {
+            count[ch - 'a']++;
+        }
+
+        int[] halfCount = new int[26];
+        char middle = 0;
+        int halfLength = n / 2;
+
+        for (int i = 0; i < 26; i++) {
+            halfCount[i] = count[i] / 2;
+
+            if ((count[i] & 1) == 1) {
+                middle = (char) ('a' + i);
+            }
+        }
+
+        logFact = new double[halfLength + 1];
+
+        for (int i = 1; i <= halfLength; i++) {
+            logFact[i] = logFact[i - 1] + Math.log(i);
+        }
+
+        if (countPermutations(halfCount, halfLength, k) < k) {
+            return "";
+        }
+
+        StringBuilder left = new StringBuilder();
+        int remaining = halfLength;
+
+        while (remaining > 0) {
+            for (int ch = 0; ch < 26; ch++) {
+                if (halfCount[ch] == 0) {
+                    continue;
+                }
+
+                halfCount[ch]--;
+
+                long permutations = countPermutations(
+                    halfCount,
+                    remaining - 1,
+                    k
+                );
+
+                if (permutations >= k) {
+                    left.append((char) ('a' + ch));
+                    remaining--;
+                    break;
+                }
+
+                k -= permutations;
+                halfCount[ch]++;
+            }
+        }
+
+        StringBuilder answer = new StringBuilder(left);
+
+        if ((n & 1) == 1) {
+            answer.append(middle);
+        }
+
+        answer.append(new StringBuilder(left).reverse());
+
+        return answer.toString();
+    }
+
+    private long countPermutations(int[] count, int total, long limit) {
+        if (total <= 1) {
+            return 1;
+        }
+
+        double logWays = logFact[total];
+
+        for (int value : count) {
+            logWays -= logFact[value];
+        }
+
+        if (logWays > Math.log(limit) + 1e-10) {
+            return limit;
+        }
+
+        long result = 1;
+        int used = 0;
+
+        for (int value : count) {
+            if (value == 0) {
+                continue;
+            }
+
+            long combinations = combinationCapped(
+                used + value,
+                value,
+                limit
+            );
+
+            if (result > limit / combinations) {
+                return limit;
+            }
+
+            result *= combinations;
+
+            if (result >= limit) {
+                return limit;
+            }
+
+            used += value;
+        }
+
+        return result;
+    }
+
+    private long combinationCapped(int n, int r, long limit) {
+        r = Math.min(r, n - r);
+
+        if (r == 0) {
+            return 1;
+        }
+
+        long result = 1;
+
+        for (int i = 1; i <= r; i++) {
+            long numerator = n - r + i;
+            long denominator = i;
+
+            long gcd1 = gcd(numerator, denominator);
+            numerator /= gcd1;
+            denominator /= gcd1;
+
+            long gcd2 = gcd(result, denominator);
+            result /= gcd2;
+            denominator /= gcd2;
+
+            if (result > limit / numerator) {
+                return limit;
+            }
+
+            result *= numerator;
+            result /= denominator;
+
+            if (result >= limit) {
+                return limit;
+            }
+        }
+
+        return result;
+    }
+
+    private long gcd(long a, long b) {
+        while (b != 0) {
+            long temp = a % b;
+            a = b;
+            b = temp;
+        }
+
+        return a;
+    }
+}
