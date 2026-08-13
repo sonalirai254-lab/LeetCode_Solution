@@ -1,0 +1,119 @@
+//////////////                 2213. Longest Substring of One Repeating Character                  //////////////
+
+
+
+
+
+class Solution {
+
+    static class Node {
+        int leftLen;
+        int rightLen;
+        int maxLen;
+        int len;
+        char leftChar;
+        char rightChar;
+
+        Node() {
+        }
+
+        Node(char ch) {
+            leftLen = 1;
+            rightLen = 1;
+            maxLen = 1;
+            len = 1;
+            leftChar = ch;
+            rightChar = ch;
+        }
+    }
+
+    private Node[] tree;
+    private char[] arr;
+
+    public int[] longestRepeating(String s, String queryCharacters, int[] queryIndices) {
+        int n = s.length();
+        int k = queryIndices.length;
+
+        arr = s.toCharArray();
+        tree = new Node[4 * n];
+
+        build(1, 0, n - 1);
+
+        int[] ans = new int[k];
+
+        for (int i = 0; i < k; i++) {
+            int index = queryIndices[i];
+            char ch = queryCharacters.charAt(i);
+
+            if (arr[index] != ch) {
+                arr[index] = ch;
+                update(1, 0, n - 1, index, ch);
+            }
+
+            ans[i] = tree[1].maxLen;
+        }
+
+        return ans;
+    }
+
+    private void build(int node, int start, int end) {
+        if (start == end) {
+            tree[node] = new Node(arr[start]);
+            return;
+        }
+
+        int mid = start + (end - start) / 2;
+
+        build(node * 2, start, mid);
+        build(node * 2 + 1, mid + 1, end);
+
+        tree[node] = merge(tree[node * 2], tree[node * 2 + 1]);
+    }
+
+    private void update(int node, int start, int end, int index, char ch) {
+        if (start == end) {
+            tree[node] = new Node(ch);
+            return;
+        }
+
+        int mid = start + (end - start) / 2;
+
+        if (index <= mid) {
+            update(node * 2, start, mid, index, ch);
+        } else {
+            update(node * 2 + 1, mid + 1, end, index, ch);
+        }
+
+        tree[node] = merge(tree[node * 2], tree[node * 2 + 1]);
+    }
+
+    private Node merge(Node left, Node right) {
+        Node current = new Node();
+
+        current.len = left.len + right.len;
+
+        current.leftChar = left.leftChar;
+        current.rightChar = right.rightChar;
+
+        current.leftLen = left.leftLen;
+        current.rightLen = right.rightLen;
+
+        current.maxLen = Math.max(left.maxLen, right.maxLen);
+
+        if (left.rightChar == right.leftChar) {
+            int combined = left.rightLen + right.leftLen;
+
+            current.maxLen = Math.max(current.maxLen, combined);
+
+            if (left.leftLen == left.len) {
+                current.leftLen = left.len + right.leftLen;
+            }
+
+            if (right.rightLen == right.len) {
+                current.rightLen = right.len + left.rightLen;
+            }
+        }
+
+        return current;
+    }
+}
