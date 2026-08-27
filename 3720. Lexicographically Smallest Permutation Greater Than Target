@@ -1,0 +1,75 @@
+//////////////                        3720. Lexicographically Smallest Permutation Greater Than Target                             //////////////////
+
+
+
+
+
+class Solution {
+
+    public String lexGreaterPermutation(String s, String target) {
+        int n = s.length();
+
+        int[] freq = new int[26];
+
+        for (char c : s.toCharArray()) {
+            freq[c - 'a']++;
+        }
+
+        StringBuilder ans = new StringBuilder();
+
+        for (int i = 0; i < n; i++) {
+            int curr = target.charAt(i) - 'a';
+
+            if (freq[curr] > 0) {
+                ans.append(target.charAt(i));
+                freq[curr]--;
+            } else {
+            
+                for (int j = curr + 1; j < 26; j++) {
+                    if (freq[j] > 0) {
+                        ans.append((char) ('a' + j));
+                        freq[j]--;
+
+                        appendRemaining(ans, freq);
+                        return ans.toString();
+                    }
+                }
+
+                break;
+            }
+        }
+
+        for (int i = ans.length() - 1; i >= 0; i--) {
+
+            char current = ans.charAt(i);
+
+            freq[current - 'a']++;
+
+       
+            for (int j = current - 'a' + 1; j < 26; j++) {
+                if (freq[j] > 0) {
+
+                    ans.setCharAt(i, (char) ('a' + j));
+                    freq[j]--;
+
+                    ans.setLength(i + 1);
+
+                    appendRemaining(ans, freq);
+
+                    return ans.toString();
+                }
+            }
+        }
+
+        return "";
+    }
+
+    private void appendRemaining(StringBuilder ans, int[] freq) {
+        for (int i = 0; i < 26; i++) {
+            while (freq[i] > 0) {
+                ans.append((char) ('a' + i));
+                freq[i]--;
+            }
+        }
+    }
+}
