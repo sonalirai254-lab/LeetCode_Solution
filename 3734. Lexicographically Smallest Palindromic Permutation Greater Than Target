@@ -1,0 +1,115 @@
+////////////////////                          3734. Lexicographically Smallest Palindromic Permutation Greater Than Target                       ////////////////////
+
+
+
+
+
+class Solution {
+    public String lexPalindromicPermutation(String s, String target) {
+        int n = s.length();
+        int[] freq = new int[26];
+
+        for (char c : s.toCharArray()) {
+            freq[c - 'a']++;
+        }
+
+        int odd = 0;
+        char middle = 0;
+
+        for (int i = 0; i < 26; i++) {
+            if (freq[i] % 2 == 1) {
+                odd++;
+                middle = (char) ('a' + i);
+            }
+        }
+
+        if (odd > 1) {
+            return "";
+        }
+
+        int m = n / 2;
+        int[] count = new int[26];
+
+        for (int i = 0; i < 26; i++) {
+            count[i] = freq[i] / 2;
+        }
+
+        boolean samePossible = true;
+        int[] temp = count.clone();
+
+        for (int i = 0; i < m; i++) {
+            int c = target.charAt(i) - 'a';
+
+            if (temp[c] == 0) {
+                samePossible = false;
+                break;
+            }
+
+            temp[c]--;
+        }
+
+        if (samePossible) {
+            String sameHalf = target.substring(0, m);
+            String candidate = buildPalindrome(sameHalf, middle);
+
+            if (candidate.compareTo(target) > 0) {
+                return candidate;
+            }
+        }
+
+        int[] remaining = count.clone();
+        String best = null;
+
+        for (int i = 0; i < m; i++) {
+            int targetChar = target.charAt(i) - 'a';
+
+            for (int c = targetChar + 1; c < 26; c++) {
+                if (remaining[c] > 0) {
+                    StringBuilder half = new StringBuilder();
+
+                    half.append(target, 0, i);
+                    half.append((char) ('a' + c));
+
+                    int[] next = remaining.clone();
+                    next[c]--;
+
+                    for (int j = 0; j < 26; j++) {
+                        while (next[j] > 0) {
+                            half.append((char) ('a' + j));
+                            next[j]--;
+                        }
+                    }
+
+                    best = half.toString();
+                    break;
+                }
+            }
+
+            if (remaining[targetChar] == 0) {
+                break;
+            }
+
+            remaining[targetChar]--;
+        }
+
+        if (best == null) {
+            return "";
+        }
+
+        return buildPalindrome(best, middle);
+    }
+
+    private String buildPalindrome(String half, char middle) {
+        StringBuilder result = new StringBuilder();
+
+        result.append(half);
+
+        if (middle != 0) {
+            result.append(middle);
+        }
+
+        result.append(new StringBuilder(half).reverse());
+
+        return result.toString();
+    }
+}
