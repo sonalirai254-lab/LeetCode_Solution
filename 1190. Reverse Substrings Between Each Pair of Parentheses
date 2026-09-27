@@ -1,0 +1,30 @@
+//////////////////////////                         1190. Reverse Substrings Between Each Pair of Parentheses                           ////////////////////////////
+
+
+
+
+
+
+class Solution {
+    public String reverseParentheses(String s) {
+        java.util.Stack<String> stack = new java.util.Stack<>();
+        StringBuilder current = new StringBuilder();
+
+        for (char ch : s.toCharArray()) {
+
+            if (ch == '(') {
+                stack.push(current.toString());
+                current.setLength(0);
+            } 
+            else if (ch == ')') {
+                current.reverse();
+                current.insert(0, stack.pop());
+            } 
+            else {
+                current.append(ch);
+            }
+        }
+
+        return current.toString();
+    }
+}
