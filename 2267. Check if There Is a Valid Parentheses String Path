@@ -1,0 +1,63 @@
+//////////////////////////                          2267. Check if There Is a Valid Parentheses String Path                             ///////////////////////////
+
+
+
+
+
+
+class Solution {
+    public boolean hasValidPath(char[][] grid) {
+        int m = grid.length;
+        int n = grid[0].length;
+
+        if ((m + n - 1) % 2 != 0) {
+            return false;
+        }
+
+        boolean[][][] dp = new boolean[m][n][m + n];
+
+        if (grid[0][0] == '(') {
+            dp[0][0][1] = true;
+        } else {
+            return false;
+        }
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+
+                if (i == 0 && j == 0) {
+                    continue;
+                }
+
+                for (int balance = 0; balance < m + n; balance++) {
+
+                    boolean possible = false;
+
+                    if (i > 0) {
+                        possible |= dp[i - 1][j][balance];
+                    }
+
+                    if (j > 0) {
+                        possible |= dp[i][j - 1][balance];
+                    }
+
+                    if (!possible) {
+                        continue;
+                    }
+
+                    if (grid[i][j] == '(') {
+                        if (balance + 1 < m + n) {
+                            dp[i][j][balance + 1] = true;
+                        }
+                    } else {
+                        if (balance > 0) {
+                            dp[i][j][balance - 1] = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return dp[m - 1][n - 1][0];
+    }
+}
