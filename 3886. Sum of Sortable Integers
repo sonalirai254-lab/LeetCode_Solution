@@ -1,0 +1,71 @@
+///////////////////////////////////                     3886. Sum of Sortable Integers                   ////////////////////////////////////
+
+
+
+
+
+
+
+class Solution {
+    public int sortableIntegers(int[] nums) {
+        int n = nums.length;
+        int ans = 0;
+
+        for (int k = 1; k <= n; k++) {
+            if (n % k != 0) {
+                continue;
+            }
+
+            boolean valid = true;
+            int prevMax = Integer.MIN_VALUE;
+
+            for (int start = 0; start < n; start += k) {
+                int end = start + k - 1;
+                int descent = -1;
+
+                for (int i = start; i < end; i++) {
+                    if (nums[i] > nums[i + 1]) {
+                        if (descent != -1) {
+                            valid = false;
+                            break;
+                        }
+                        descent = i;
+                    }
+                }
+
+                if (!valid) {
+                    break;
+                }
+
+                int minVal;
+                int maxVal;
+
+                if (descent == -1) {
+                    minVal = nums[start];
+                    maxVal = nums[end];
+                } else {
+                    if (nums[end] > nums[start]) {
+                        valid = false;
+                        break;
+                    }
+
+                    minVal = nums[descent + 1];
+                    maxVal = nums[descent];
+                }
+
+                if (prevMax > minVal) {
+                    valid = false;
+                    break;
+                }
+
+                prevMax = maxVal;
+            }
+
+            if (valid) {
+                ans += k;
+            }
+        }
+
+        return ans;
+    }
+}
