@@ -1,0 +1,170 @@
+/////////////////////////////                           3505. Minimum Operations to Make Elements Within K Subarrays Equal                           //////////////////////////////
+
+
+
+
+
+
+
+
+import java.util.*;
+
+class Solution {
+
+    TreeMap<Integer, Integer> left = new TreeMap<>();
+    TreeMap<Integer, Integer> right = new TreeMap<>();
+
+    long sumLeft = 0, sumRight = 0;
+    int sizeLeft = 0, sizeRight = 0;
+    int target;
+
+    public long minOperations(int[] nums, int x, int k) {
+
+        int n = nums.length;
+
+        target = (x + 1) / 2;
+
+        long[] cost = new long[n - x + 1];
+
+        left.clear();
+        right.clear();
+
+        sumLeft = sumRight = 0;
+        sizeLeft = sizeRight = 0;
+
+        for (int i = 0; i < x; i++) {
+            add(nums[i]);
+        }
+
+        balance();
+
+        for (int i = 0; i <= n - x; i++) {
+
+            int median = left.lastKey();
+
+            cost[i] = (long) median * sizeLeft - sumLeft
+                    + sumRight - (long) median * sizeRight;
+
+            if (i == n - x) break;
+
+            remove(nums[i]);
+            add(nums[i + x]);
+
+            balance();
+        }
+
+       
+        long INF = Long.MAX_VALUE / 4;
+
+        long[][] dp = new long[k + 1][n + 1];
+
+        for (int i = 0; i <= k; i++) {
+            Arrays.fill(dp[i], INF);
+        }
+
+        for (int i = 0; i <= n; i++) {
+            dp[0][i] = 0;
+        }
+
+        for (int j = 1; j <= k; j++) {
+
+            for (int i = j * x; i <= n; i++) {
+
+                dp[j][i] = dp[j][i - 1];
+
+                int start = i - x;
+
+                dp[j][i] = Math.min(
+                    dp[j][i],
+                    dp[j - 1][start] + cost[start]
+                );
+            }
+        }
+
+        return dp[k][n];
+    }
+
+    private void add(int val) {
+
+        if (left.isEmpty()) {
+
+            if (right.isEmpty() || val <= right.firstKey()) {
+                left.put(val, left.getOrDefault(val, 0) + 1);
+                sumLeft += val;
+                sizeLeft++;
+            } else {
+                right.put(val, right.getOrDefault(val, 0) + 1);
+                sumRight += val;
+                sizeRight++;
+            }
+
+        } else if (val <= left.lastKey()) {
+
+            left.put(val, left.getOrDefault(val, 0) + 1);
+            sumLeft += val;
+            sizeLeft++;
+
+        } else {
+
+            right.put(val, right.getOrDefault(val, 0) + 1);
+            sumRight += val;
+            sizeRight++;
+        }
+    }
+
+    private void remove(int val) {
+
+        if (left.containsKey(val)) {
+
+            removeFromMap(left, val);
+            sumLeft -= val;
+            sizeLeft--;
+
+        } else {
+
+            removeFromMap(right, val);
+            sumRight -= val;
+            sizeRight--;
+        }
+    }
+
+    private void balance() {
+
+        while (sizeLeft > target) {
+
+            int val = left.lastKey();
+
+            removeFromMap(left, val);
+            sumLeft -= val;
+            sizeLeft--;
+
+            right.put(val, right.getOrDefault(val, 0) + 1);
+            sumRight += val;
+            sizeRight++;
+        }
+
+        while (sizeLeft < target) {
+
+            int val = right.firstKey();
+
+            removeFromMap(right, val);
+            sumRight -= val;
+            sizeRight--;
+
+            left.put(val, left.getOrDefault(val, 0) + 1);
+            sumLeft += val;
+            sizeLeft++;
+        }
+    }
+
+    private void removeFromMap(TreeMap<Integer, Integer> map, int val) {
+
+        int count = map.get(val);
+
+        if (count == 1) {
+            map.remove(val);
+        } else {
+            map.put(val, count - 1);
+        }
+    }
+}
